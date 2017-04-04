@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (c) 2013 ITE Corporation. All rights reserved. 
+ * Copyright (c) 2016 ITE Corporation. All rights reserved. 
  *
  * Module Name:
  *   iocontrol.h
@@ -318,7 +318,8 @@ typedef struct {
 } TxSetFwPSITableTimerRequest, *PTxSetFwPSITableTimerRequest;
 
 typedef struct {
-    Bool 				isUseLowBrate;
+    __u32 				pBufferAddr;			// Byte*
+    __u32 				pdwBufferLength;
     __u32				error;
     Byte				reserved[16];
 } TxSetLowBitRateTransferRequest, *PTxSetLowBitRateTransferRequest;
@@ -343,15 +344,98 @@ typedef struct {
     Byte			reserved[16];
 } TxGetChipTypeRequest, *PTxGetChipTypeRequest;
 
+typedef struct {
+    __u32			  	isdbtModulationAddr;	//	ISDBTModulation
+    __u32				error;
+    Byte				reserved[16];
+} TXSetISDBTChannelModulationRequest, *PTXSetISDBTChannelModulationRequest;
+
+typedef struct {
+    TMCCINFO      		TmccInfo;
+    Bool			    actualInfo;
+    __u32				error;
+    Byte				reserved[16];
+} TXSetTMCCInfoRequest, *PTXSetTMCCInfoRequest;
+
+typedef struct {
+    TMCCINFO          	TmccInfo;
+    __u32				error;
+    Byte				reserved[16];
+} TXGetTMCCInfoRequest, *PTXGetTMCCInfoRequest;
+
+typedef struct {
+    Word				BitRate_Kbps;
+    __u32				error;
+    Byte				reserved[16];
+} TXGetTSinputBitRateRequest, *PTXGetTSinputBitRateRequest;
+
+typedef struct {
+    Byte            	index;
+    Pid             	pid;
+	TransportLayer  	layer;
+    __u32				error;
+    Byte				reserved[16];
+} TXAddPidToISDBTPidFilterRequest, *PTXAddPidToISDBTPidFilterRequest;
+
+typedef struct {
+    PcrMode			mode;
+    __u32				error;
+    Byte				reserved[16];
+} TxSetPcrModeRequest, *PTxSetPcrModeRequest;
+
+typedef struct {
+	__u32				DCInfoAddr;	//DCInfo*
+    __u32				error;
+    Byte				reserved[16];
+} TxSetDCTableRequest, *PTxSetDCTableRequest;
+
+typedef struct {
+    Byte				frequencyindex;
+    __u32				error;
+    Byte				reserved[16];    
+} TxGetFrequencyIndexRequest, *PTxGetFrequencyIndexRequest;
+
+typedef struct {
+    Byte			DTVMode;
+    __u32			error;
+    Byte			reserved[16];
+} TxGetDTVModeRequest, *PTxGetDTVModeRequest;
+
+typedef struct {
+    __u32			key	;
+    __u32			error;
+    Byte			reserved[16];
+} TxEnableTpsEncryptionRequest, *PTxEnableTpsEncryptionRequest;
+
+typedef struct {
+    __u32			error;
+    Byte			reserved[16];
+} TxDisableTpsEncryptionRequest, *PTxDisableTpsEncryptionRequest;
+
+typedef struct {
+    __u32			decryptKey;
+    Byte			decryptEnable;
+    __u32			error;
+    Byte			reserved[16];
+} TxSetDecryptRequest, *PTxSetDecryptRequest;
+
+typedef struct {
+    Bool			isInversion;
+    __u32			error;
+    Byte			reserved[16];
+} TxSetSpectralInversionRequest, *PTxSetSpectralInversionRequest;
+
 /**
  * Modulator & Demodulator API commands
  */
-#define IOCTRL_ITE_GROUP_STANDARD           0x000
+#define IOCTRL_ITE_GROUP_STANDARD			0x000
 #define IOCTRL_ITE_GROUP_DVBT				0x100
 #define IOCTRL_ITE_GROUP_DVBH				0x200
-#define IOCTRL_ITE_GROUP_FM                 0x300
+#define IOCTRL_ITE_GROUP_FM					0x300
 #define IOCTRL_ITE_GROUP_TDMB				0x400
-#define IOCTRL_ITE_GROUP_OTHER              0x500
+#define IOCTRL_ITE_GROUP_OTHER				0x500
+#define IOCTRL_ITE_GROUP_ISDBT				0x600
+#define IOCTRL_ITE_GROUP_SECURITY			0x700
 
 
 /***************************************************************************/
@@ -513,6 +597,12 @@ typedef struct {
 #define IOCTL_ITE_MOD_GETCHIPTYPE \
 	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3B, TxGetChipTypeRequest)
 
+/**
+ * Get Chip Type IT9507/IT9503 in modulator.
+ * Paramters:   TxSetSpectralInversion struct
+ */
+#define IOCTL_ITE_MOD_SETSPECTRALINVERSION \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_STANDARD + 0x3C, TxSetSpectralInversionRequest)
 
 /***************************************************************************/
 /*                           DVBT                                 */
@@ -575,7 +665,7 @@ typedef struct {
 
 
 /***************************************************************************/
-/*                                OTHER                                    */
+/*                            OTHER                               */
 /***************************************************************************/
 /**
  * Get driver information.
@@ -637,7 +727,7 @@ typedef struct {
  * Modulator: Set Command.
  * Paramters: TxCmdRequest struct
  */		
-#define IOCTL_ITE_MOD_WRITECMD \
+#define IOCTL_ITE_MOD_WRITE_CMD \
 	_IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x0C, TxCmdRequest)	
 	
 /**
@@ -676,12 +766,102 @@ typedef struct {
 	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x11, TxSetFwPSITableTimerRequest)		
 
 /**
- * Modulator: Set Low Bit Rate Date.
- * Paramters: TxSetTPSRequest struct
+ * Modulator: Write Low Bit Rate Date.
+ * Paramters: TxSetLowBitRateTransferRequest struct
  */	
-#define IOCTL_ITE_MOD_SETLOWBRATETRANS \
+#define IOCTL_ITE_MOD_WRITE_LOWBITRATEDATA \
 	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x12, TxSetLowBitRateTransferRequest)	
 
+/**
+ * Modulator: Set PCR Mode.
+ * Paramters: TxSetPcrModeRequest struct
+ */	
+#define IOCTL_ITE_MOD_SETPCRMODE \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x13, TxSetPcrModeRequest)	
+
+/**
+ * Modulator: Set DC Table.
+ * Paramters: TxSetPcrModeRequest struct
+ */	
+#define IOCTL_ITE_MOD_SETDCTABLE \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x14, TxSetDCTableRequest)	
+
+/**
+ * Enable Get Frequency Index Value From API.
+ * Paramters:	GetFrequencyIndexRequest struct
+ */
+#define IOCTL_ITE_MOD_GETFREQUENCYINDEX \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_OTHER + 0x15, TxGetFrequencyIndexRequest)	
+
+	
+/***************************************************************************/
+/*                            ISDB-T                             */
+/***************************************************************************/
+/**
+ * Set ISDB-T Channel Modulation.
+ * Paramters:	TXSetISDBTChannelModulationRequest struct
+ */
+#define IOCTL_ITE_MOD_SETISDBTCHANNELMODULATION \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x00, TXSetISDBTChannelModulationRequest)
+
+/**
+ * Set TMCC Information.
+ * Paramters:	TXSetTMCCInfoRequest struct
+ */
+#define IOCTL_ITE_MOD_SETTMCCINFO \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x01, TXSetTMCCInfoRequest)
+	
+/**
+ * Get TMCC Information.
+ * Paramters:	TXGetTMCCInfoRequest struct
+ */
+#define IOCTL_ITE_MOD_GETTMCCINFO \
+	_IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x02, TXGetTMCCInfoRequest)
+
+/**
+ * Get TS Input Bit Rate.
+ * Paramters:	TXGetTSinputBitRate struct
+ */
+#define IOCTL_ITE_MOD_GETTSINPUTBITRATE \
+	_IOR(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x03, TXGetTSinputBitRateRequest)
+	
+/**
+ * Get Add Pid To ISDBT Pid Filter.
+ * Paramters:	TXGetTSinputBitRate struct
+ */
+#define IOCTL_ITE_MOD_ADDPIDTOISDBTPIDFILTER \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x04, TXAddPidToISDBTPidFilterRequest)
+		
+/**
+ * Get DTV Mode.
+ * Paramters:	TxGetDTVModeRequest struct
+ */
+#define IOCTL_ITE_MOD_GETDTVMODE \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_ISDBT + 0x05, TxGetDTVModeRequest)
+
+/***************************************************************************/
+/*                             SECURITY                          */
+/***************************************************************************/
+/**
+ * Enable TPS Encryption.
+ * Paramters:	TxEnableTpsEncryptionRequest struct
+ */
+#define IOCTL_ITE_MOD_ENABLETPSENCRYPTION \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x01, TxEnableTpsEncryptionRequest)
+
+/**
+ * Disable TPS Encryption.
+ * Paramters:	TxDisableTpsEncryptionRequest struct
+ */
+#define IOCTL_ITE_MOD_DISABLETPSENCRYPTION \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x02, TxDisableTpsEncryptionRequest)
+
+/**
+ * Set TPS Decryption.
+ * Paramters:	TxSetDecryptRequest struct
+ */
+#define IOCTL_ITE_DEMOD_SETDECRYPT \
+	_IOW(AFA_IOC_MAGIC, IOCTRL_ITE_GROUP_SECURITY + 0x03, TxSetDecryptRequest)
 
 Dword DemodIOCTLFun(
     void *       		handle,

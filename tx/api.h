@@ -1,8 +1,8 @@
 /**
- * Copyright (c) 2013 ITE Technologies, Inc. All rights reserved.
+ * Copyright (c) 2016 ITE Technologies, Inc. All rights reserved.
  * 
  * Date:
- *    2013/10/15
+ *    2016/09/29
  *
  * Module Name:
  *    api.h
@@ -62,12 +62,26 @@ typedef enum {
 } DTVStreamType;
 
 /*
- * Device information.
+ * 	Chip Type Information.
  */
 typedef struct {
 	Word UsbMode;
 	Word VendorID;
 	Word ProductID;
+} CHIPTYPE_INFO, *PCHIPTYPE_INFO;
+
+/*
+ * Device information.
+ */
+typedef struct {
+    Byte	DriverVerion[16];   /** XX.XX.XX.XX Ex., 1.2.3.4			*/
+    Byte	APIVerion[32];      /** XX.XX.XXXXXXXX.XX Ex., 1.2.3.4	*/
+    Byte	FWVerionLink[16];   /** XX.XX.XX.XX Ex., 1.2.3.4			*/
+    Byte	FWVerionOFDM[16];   /** XX.XX.XX.XX Ex., 1.2.3.4			*/
+    Byte	DateTime[24];       /** Ex.,"2004-12-20 18:30:00" or "DEC 20 2004 10:22:10" with compiler __DATE__ and __TIME__  definitions */
+    Byte	Company[8];         /** Ex.,"ITEtech"						*/
+    Byte	SupportHWInfo[32];  /** Ex.," DVBT/ISDBT"					*/	
+	Word	ProductID;
 } DEVICE_INFO, *PDEVICE_INFO;
 
 /*
@@ -142,10 +156,10 @@ typedef enum {
  * The type defination of FrameRow.
  */
 typedef enum {
-	DTVFrameRow_256 = 0,         // There should be 256 rows for each column in MPE-FEC frame.
-	DTVFrameRow_512,             // There should be 512 rows for each column in MPE-FEC frame.
-	DTVFrameRow_768,	         // There should be 768 rows for each column in MPE-FEC frame.
-	DTVFrameRow_1024             // There should be 1024 rows for each column in MPE-FEC frame.
+	DTVFrameRow_256 = 0,			// There should be 256 rows for each column in MPE-FEC frame.
+	DTVFrameRow_512,				// There should be 512 rows for each column in MPE-FEC frame.
+	DTVFrameRow_768,				// There should be 768 rows for each column in MPE-FEC frame.
+	DTVFrameRow_1024				// There should be 1024 rows for each column in MPE-FEC frame.
 } DTVFrameRow;
 
 /*
@@ -155,14 +169,14 @@ typedef enum {
  * as sectionType = SectionType_MPE: except table all other fields is valid.
  */
 typedef struct {
-	Byte table;	                 // The table ID. Which is used to filter specific SI/PSI table.
-	Byte duration;               // The maximum burst duration. It can be specify to 0xFF if user don't know the exact value.
+	Byte table;					// The table ID. Which is used to filter specific SI/PSI table.
+	Byte duration;				// The maximum burst duration. It can be specify to 0xFF if user don't know the exact value.
 	DTVFrameRow frameRow;        // The frame row of MPE-FEC. It means the exact number of rows for each column in MPE-FEC frame.
-	DTVSectionType sectionType;  // The section type of pid. See the defination of SectionType.
-	DTVPriority priority;        // The priority of MPE data. Only valid when sectionType is set to SectionType_MPE.
-	DTVIpVersion version;        // The IP version of MPE data. Only valid when sectionType is set to SectionType_MPE.
-	Bool cache;                  // True: MPE data will be cached in device's buffer. Fasle: MPE will be transfer to host.
-	Word value;                  // The 13 bits Packet ID.
+	DTVSectionType sectionType;	// The section type of pid. See the defination of SectionType.
+	DTVPriority priority;		// The priority of MPE data. Only valid when sectionType is set to SectionType_MPE.
+	DTVIpVersion version;		// The IP version of MPE data. Only valid when sectionType is set to SectionType_MPE.
+	Bool cache;					// True: MPE data will be cached in device's buffer. Fasle: MPE will be transfer to host.
+	Word value;					// The 13 bits Packet ID.
 } DTVPid, *PDTVPid;
 
 /*
@@ -244,9 +258,9 @@ typedef enum {
  * The defination of ChannelInformation.
  */
 typedef struct {
-    Dword frequency;                         // Channel frequency in KHz.
-    DTVTransmissionMode transmissionMode;    // Number of carriers used for OFDM signal.
-    DTVConstellation constellation;          // Constellation scheme (FFT mode) in use.
+    Dword frequency; 							// Channel frequency in KHz.
+    DTVTransmissionMode transmissionMode;	// Number of carriers used for OFDM signal.
+    DTVConstellation constellation;			// Constellation scheme (FFT mode) in use.
     DTVInterval interval;                    // Fraction of symbol length used as guard (Guard Interval).
     DTVPriority priority;                    // The priority of stream.
     DTVCodeRate highCodeRate;                // FEC coding ratio of high-priority stream.
@@ -291,16 +305,16 @@ typedef struct {
  * The type defination of Service Component.
  */
 typedef struct {
-    Byte serviceType;            // Service Type(P/D): 0x00: Program, 0x80: Data.
-    Dword serviceId;             // Service ID.
-    Word componentId;            // Stream audio/data is subchid, packet mode is SCId.
-    Byte componentIdService;     // Component ID within Service.
-    DTVLabel componentLabel;     // The label of component. See the defination of Label.
-    Byte language;               // Language code.
-    Byte primary;                // Primary/Secondary.
-    Byte conditionalAccess;      // Conditional Access flag.
-    Byte componentType;          // Component Type (A/D).
-    Byte transmissionId;         // Transmission Mechanism ID.
+    Byte serviceType;				// Service Type(P/D): 0x00: Program, 0x80: Data.
+    Dword serviceId;				// Service ID.
+    Word componentId;				// Stream audio/data is subchid, packet mode is SCId.
+    Byte componentIdService;		// Component ID within Service.
+    DTVLabel componentLabel;		// The label of component. See the defination of Label.
+    Byte language;				// Language code.
+    Byte primary;					// Primary/Secondary.
+    Byte conditionalAccess;		// Conditional Access flag.
+    Byte componentType;			// Component Type (A/D).
+    Byte transmissionId;			// Transmission Mechanism ID.
 } DTVComponent, *PDTVComponent;
 
 typedef struct _MODULATION_PARAM{
@@ -311,268 +325,337 @@ typedef struct _MODULATION_PARAM{
     Byte interval;   
 } MODULATION_PARAM, *PMODULATION_PARAM;
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Initialize Chip and Power on device.
-//
-//  PARAMETERS:
-//      None.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
-DTVEXPORT Dword g_ITEAPI_TxDeviceInit(IN Byte DevNo);
+/*
+ * The type defination of handle type.
+ */
+typedef enum {
+    EAGLEI = 0,
+    EAGLEII,
+} HandleType;
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Clean up & Power off device.
-//
-//  PARAMETERS:
-//      None.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Open handle, Power On and Check device information.
+ *
+ *  PARAMETERS:
+ * 		 handleType:	typedef enum HandleType.
+ *      DevNo: 		device number for multi deivce.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxDeviceInit(IN HandleType handleType, IN IN Byte DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Clean up & Power off device.
+ *
+ *  PARAMETERS:
+ *      None.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ *******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxDeviceExit(IN Byte DevNo);
 
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set Channel Modulation to Tx.
+ *
+ *  PARAMETERS:
+ *      struct MODULATION_PARAM.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ *******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetChannelModulation( IN MODULATION_PARAM ChannelModulation_Setting, IN Byte DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set Channel frequency and bandwidth to Tx.
+ *
+ *  PARAMETERS:
+ *      bfrequency
+ * 		bbandwidth
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ *******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetChannel(IN Dword bfrequency, IN Word bbandwidth, IN Byte DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set Mode Enable.
+ *
+ *  PARAMETERS:
+ *      OnOff
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ *******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetModeEnable(IN Byte OnOff, IN Byte DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set Device Type.
+ *
+ *  PARAMETERS:
+ *      DeviceType
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ *******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetDeviceType(IN Byte DeviceType, IN Byte DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get Device Type.
+ *
+ *  PARAMETERS:
+ *      DeviceType
+ * 
+ *  RETURNS:
+ *  	0:	 		 no error. Return current device type.
+ * 		non-zero:	 Using Default devicetype. return default type 
+ * 					 and return error message.
+ *******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxGetDeviceType(OUT Byte *DeviceType, IN Byte DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *     Adjust Output Gain to Tx.
+ *
+ *  PARAMETERS:
+ *     Gain_value
+ *		Out_Gain_valu
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ *******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxAdjustOutputGain(IN int Gain_value, OUT int *Out_Gain_valu, IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Add Pid number, for DVB-T mode.
-//
-//  PARAMETERS:
-//      byIndex - 0 ~ 31.
-//      wProgId - pid number.
-//
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Add Pid number, for DVB-T mode.
+ *
+ *  PARAMETERS:
+ *      byIndex - 0 ~ 31.
+ *      wProgId - pid number.
+ *
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxAddPID(IN Byte byIndex, IN  Word wProgId, IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Clear all the PID's set previously by g_ITEAPI_AddPID(), for DVB-T mode.
-//
-//  PARAMETERS:
-//      None.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Clear all the PID's set previously by g_ITEAPI_AddPID(),
+ *  	 for DVB-T mode.
+ *  PARAMETERS:
+ *      None.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxResetPidFilter(IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Add Pid number with extension parameters, specifically for DVB-H.
-//
-//  PARAMETERS:
-//      pid - pid structure data (Specify the PID number and relevant attributes in DVB-H mode).
-//
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Add Pid number with extension parameters, specifically for DVB-H.
+ *
+ *  PARAMETERS:
+ *      pid - pid structure data (Specify the PID number and relevant attributes in DVB-H mode).
+ *
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxAddPIDEx(IN  DTVPid pid, IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Start to Transfer data from device, for DVB-T mode.
-//      The drievr starts to receive TS data and store it in the ring buffer.
-//
-//  PARAMETERS:
-//      None.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Start to Transfer data from device, for DVB-T mode.
+ *      The drievr starts to receive TS data and store it in the ring buffer.
+ *
+ *  PARAMETERS:
+ *      None.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 Dword g_ITEAPI_StartTransfer(IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      For DTVCAM. Start to Transfer data from device, for DVB-T mode.
-//      The drievr starts to receive TS data and store it in the ring buffer.
-//
-//  PARAMETERS:
-//      None.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      For DTVCAM. Start to Transfer data from device, for DVB-T mode.
+ *      The drievr starts to receive TS data and store it in the ring buffer.
+ *
+ *  PARAMETERS:
+ *      None.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 Dword g_ITEAPI_StartTransfer_CMD(IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Stop to Transfer data from device, for DVB-T mode.
-//
-//  PARAMETERS:
-//      None.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Stop to Transfer data from device, for DVB-T mode.
+ *
+ *  PARAMETERS:
+ *      None.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_StopTransfer(IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      For DTVCAM. Stop to Transfer data from device, for DVB-T mode.
-//
-//  PARAMETERS:
-//      None.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      For DTVCAM. Stop to Transfer data from device, for DVB-T mode.
+ *
+ *  PARAMETERS:
+ *      None.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_StopTransfer_CMD(IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Control Power Saving. The function can be called by application for power saving while idle mode.
-//
-//  PARAMETERS:
-//      byCtrl - 1: Power Up, 0: Power Down.
-//               Power Up :  Resume  device to normal state.
-//               Power Down : Suspend device to hibernation state.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Control Power Saving. The function can be called by application for power saving while idle mode.
+ *
+ *  PARAMETERS:
+ *      byCtrl - 1: Power Up, 0: Power Down.
+ *               Power Up :  Resume  device to normal state.
+ *               Power Down : Suspend device to hibernation state.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxPowerCtl(IN  Byte byCtrl, IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Get Driver & API Version.
-//
-//  PARAMETERS:
-//      pDriverInfo - Return driver information with DTVDriverInfo structure.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
-DTVEXPORT Dword g_ITEAPI_TxGetDrvInfo(OUT PTxModDriverInfo pDriverInfo, IN Byte DevNo);
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get Driver & API Version.
+ *
+ *  PARAMETERS:
+ *      pTxDriverInfo 
+ * 			- Return driver information with PDEVICE_INFO structure.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxGetDrvInfo(
+    OUT PDEVICE_INFO pDeviceInfo,
+	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Get Device information.
-//
-//  PARAMETERS:
-//      pDeviceInfo - Return driver information with PDEVICE_INFO structure.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
-DTVEXPORT Dword g_ITEAPI_TxGetDeviceInfo(OUT PDEVICE_INFO pDeviceInfo,	IN Byte DevNo);
-
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Read OFDM register.
-//
-//  PARAMETERS:
-//      dwRegAddr - Register address.
-//      pbyData - Register value.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Read OFDM register.
+ *
+ *  PARAMETERS:
+ *      dwRegAddr - Register address.
+ *      pbyData - Register value.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxReadRegOFDM(
     IN  Dword dwRegAddr,
     OUT Byte* pbyData,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Write OFDM register.
-//
-//  PARAMETERS:
-//      dwRegAddr - Register address.
-//      byData - Register value.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Write OFDM register.
+ *
+ *  PARAMETERS:
+ *      dwRegAddr - Register address.
+ *      byData - Register value.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxWriteRegOFDM(
     IN  Dword dwRegAddr,
     IN  Byte byData,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Read LINK register.
-//
-//  PARAMETERS:
-//      dwRegAddr - Register address.
-//      pbyData - Register value.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Read LINK register.
+ *
+ *  PARAMETERS:
+ *      dwRegAddr - Register address.
+ *      pbyData - Register value.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxReadRegLINK(
     IN  Dword dwRegAddr,
     OUT Byte* pbyData,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Write LINK register.
-//
-//  PARAMETERS:
-//      dwRegAddr - Register address.
-//      byData - Register value.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Write LINK register.
+ *
+ *  PARAMETERS:
+ *      dwRegAddr - Register address.
+ *      byData - Register value.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxWriteRegLINK(
     IN  Dword dwRegAddr,
     IN  Byte byData,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Write EEPROM data.
-//
-//  PARAMETERS:
-//      wRegAddr - Register address.
-//      pbyData - Register value.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Write EEPROM data.
+ *
+ *  PARAMETERS:
+ *      wRegAddr - Register address.
+ *      pbyData - Register value.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxWriteEEPROM(
     IN  Word	wRegAddr,
     OUT Byte	byData,
 	IN Byte	DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Read EEPROM data.
-//
-//  PARAMETERS:
-//      wRegAddr - Register address.
-//      pbyData - Register value.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Read EEPROM data.
+ *
+ *  PARAMETERS:
+ *      wRegAddr - Register address.
+ *      pbyData - Register value.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxReadEEPROM(
     IN  Word wRegAddr,
     OUT Byte* pbyData,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Get Gain Range.
-//
-//  PARAMETERS:
-//      frequency, bandwidth, MaxGain, MinGain
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get Gain Range.
+ *
+ *  PARAMETERS:
+ *      frequency, bandwidth, MaxGain, MinGain
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxGetGainRange(
 	IN Dword frequency,
 	IN Word bandwidth,
@@ -580,218 +663,390 @@ DTVEXPORT Dword g_ITEAPI_TxGetGainRange(
 	OUT int *MinGain,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Get TPS.
-//
-//  PARAMETERS:
-//      TPS structure
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get TPS.
+ *
+ *  PARAMETERS:
+ *      TPS structure
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxGetTPS(
 	OUT TPS *tps,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Set TPS.
-//
-//  PARAMETERS:
-//      TPS structure
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set TPS.
+ *
+ *  PARAMETERS:
+ *      TPS structure
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetTPS(
 	IN TPS tps,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Get Output Gain.
-//
-//  PARAMETERS:
-//      gain
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get Output Gain.
+ *
+ *  PARAMETERS:
+ *      gain
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxGetOutputGain(
 	OUT int *gain,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Get Number of Device. 
-//
-//  PARAMETERS:
-//      NumOfDev - Number of Device.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get Number of Device. 
+ *
+ *  PARAMETERS:
+ * 		NumOfDev - Number of Device.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxGetNumOfDevice(
-	OUT Byte *NumOfDev);
+	OUT Byte *NumOfDev,
+	IN  Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      g_ITEAPI_TxSendHwPSITable: Send Hardware PSI Table. 
-//
-//  PARAMETERS:
-//      bufferSize - size of TableBuffer.
-//		 TableBuffer
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      g_ITEAPI_TxSendHwPSITable: Send Hardware PSI Table. 
+ *
+ *  PARAMETERS:
+ *      bufferSize - size of TableBuffer.
+ *		 TableBuffer
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSendCustomPacketOnce(
 	IN int bufferSize,
 	IN Byte *TableBuffer,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      g_ITEAPI_TxAccessFwPSITable: Send Hardware PSI Table. 
-//
-//  PARAMETERS:
-//      bufferSize - size of TableBuffer.
-//		 TableBuffer
-//		 index - PSI Table Index.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      g_ITEAPI_TxAccessFwPSITable: Send Hardware PSI Table. 
+ *
+ *  PARAMETERS:
+ *      bufferSize - size of TableBuffer.
+ *		 TableBuffer
+ *		 index - PSI Table Index.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetPeridicCustomPacket(
 	IN int bufferSize,
 	IN Byte *TableBuffer,
 	IN Byte index,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      g_ITEAPI_TxSetFwPSITableTimer: Send Hardware PSI Table.
-//       
-//  PARAMETERS:
-//		 index - PSI Table Index.
-//		 timer_interval- timer.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      g_ITEAPI_TxSetFwPSITableTimer: Send Hardware PSI Table.
+ *       
+ *  PARAMETERS:
+ *		 index - PSI Table Index.
+ *		 timer_interval- timer.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetPeridicCustomPacketTimer(
 	IN Byte index, 
 	IN Word timer_interval,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Write Data. 
-//
-//  PARAMETERS:
-//		 pBuffer.
-//		 pdwBufferLength.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Write Data. 
+ *
+ *  PARAMETERS:
+ *		 pBuffer.
+ *		 pdwBufferLength.
+ * 
+ *  RETURNS:
+ *      0:			no error. write sucess.
+ *		non-zero:	write fail. buffer overflow or other error. maybe write again.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSendTSData(
     OUT Byte* pBuffer,
     IN OUT Dword pdwBufferLength,
 	IN Byte DevNo);
     
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Set IQ Table From File. 
-//
-//  PARAMETERS:
-//	 	 ptrIQtable - file content load from binary file.
-//		 IQtableSize - file size.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set IQ Table From File. 
+ *
+ *  PARAMETERS:
+ *	 	 ptrIQtable - file content load from binary file.
+ *		 IQtableSize - file size.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetIQTable(
 	IN Byte* ptrIQtable,
 	IN Word	 IQtableSize,	
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Get Chip Version ID.
-//
-//  PARAMETERS:
-//	 	 ChipType
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get Chip Version ID.
+ *
+ *  PARAMETERS:
+ *	 	 ChipType
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxGetChipType(
 	OUT	Word*	chipType,
 	IN	Byte	DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Control Pid Filter.
-//
-//  PARAMETERS:
-//		Byte control.
-//		Byte enable.
-//		Byte DevNo.
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Control Pid Filter.
+ *
+ *  PARAMETERS:
+ *		Byte control.
+ *		Byte enable.
+ *		Byte DevNo.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 Dword g_ITEAPI_TxControlPidFilter(
 	IN Byte control,
 	IN Byte enable,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Set DC Calibration Value. 
-//
-//  PARAMETERS:
-//		 dc_i	
-//	 	 dc_q
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set DC Calibration Value. 
+ *
+ *  PARAMETERS:
+ *		 dc_i	
+ *	 	 dc_q
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 DTVEXPORT Dword g_ITEAPI_TxSetDCCalibrationValue(
 	IN int dc_i,
 	IN int dc_q,
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Set Low Bit Rate Transfer. 
-//
-//  PARAMETERS:
-//		 isUseLowBrate	
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
-DTVEXPORT Dword g_ITEAPI_TxSetLowBitRateTransferRequest(
-	IN Bool isUseLowBrate,
+/*******************************************************************************
+ *  PURPOSE:
+ *      Write Low Bit Rate Data. 
+ *
+ *  PARAMETERS:
+ *		 isUseLowBrate	
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxWriteLowBitRateData(
+	IN Byte* pBuffer,
+	IN Dword BufferLength,	
 	IN Byte DevNo);
 
-// -----------------------------------------------------------------------------
-//  PURPOSE:
-//      Write command. 
-//
-//  PARAMETERS:
-//		 isUseLowBrate	
-// 
-//  RETURNS:
-//      0 if no error, non-zero value otherwise.
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  PURPOSE:
+ *      Write command. 
+ *
+ *  PARAMETERS:
+ *		 isUseLowBrate	
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
 Dword g_ITEAPI_TxWriteCmd(
 	IN Word			len,
-    IN Byte*			cmd
-);
+    IN Byte*			cmd,
+	IN Byte			DevNo);
 
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set ISDB-T Channel Modulation.
+ *
+ *  PARAMETERS:
+ *		ISDBTModulation	isdbtModulation.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxSetISDBTChannelModulation(
+	IN ISDBTModulation      isdbtModulation,
+	IN Byte					DevNo);
+	
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set TMCC Information.
+ *
+ *  PARAMETERS:
+ *		TMCCINFO      TmccInfo.
+ *		Bool		  actualInfo.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxSetTMCCInfo(
+    IN  TMCCINFO      TmccInfo,
+	IN  Byte		   DevNo);
+    
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get TMCC Information.
+ *
+ *  PARAMETERS:
+ *	    pTMCCINFO     pTmccInfo.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxGetTMCCInfo(
+    OUT  pTMCCINFO     pTmccInfo,
+	IN   Byte		DevNo);
+    
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get TMCC Information.
+ *
+ *  PARAMETERS:
+ * 		 Word*     BitRate_Kbps.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxGetTSinputBitRate(
+    OUT  Word*     BitRate_Kbps,
+	IN   Byte		DevNo);
+    
+/*******************************************************************************
+ *  PURPOSE:
+ *      Add Pid To ISDB-T Pid Filter.
+ *
+ *  PARAMETERS:
+ *		 Word*     BitRate_Kbps.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxAddPidToISDBTPidFilter(
+    IN  Byte           	index,
+    IN  Pid            	pid,
+	IN	TransportLayer	layer,
+	IN  Byte				DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set PCR Mode.
+ *
+ *  PARAMETERS:
+ *		 PcrMode     mode.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxSetPCRMode(
+    IN  PcrMode		mode,
+	IN  Byte			DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set DC Table.
+ *
+ *  PARAMETERS:
+ *		 DCInfo.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxSetDCTable(
+    IN  DCInfo			pDCInfo,
+	IN  Byte			DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get Frequency Index.
+ *
+ *  PARAMETERS:
+ *		 frequencyindex.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxGetFrequencyIndex(
+	IN  Byte*			frequencyindex,
+	IN  Byte			DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Get DTV Mode.
+ *
+ *  PARAMETERS:
+ *		 DTVMode.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxGetDTVMode(
+    OUT Byte* DTVMode,
+    IN  Byte  DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Enable TPS Encryption.
+ *
+ *  PARAMETERS:
+ *		 Encryption key.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxEnableTPSEncryption(
+    IN  Dword key,
+    IN  Byte  DevNo);
+
+/*******************************************************************************
+ *  PURPOSE:
+ *      Disable TPS Encryption.
+ *
+ *  PARAMETERS:
+ *		 None.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxDisableTPSEncryption(
+    IN  Byte  DevNo);
+	
+/*******************************************************************************
+ *  PURPOSE:
+ *      Set Spectral Inversion.
+ *
+ *  PARAMETERS:
+ *		Bool		  isInversion.
+ * 
+ *  RETURNS:
+ *      0 if no error, non-zero value otherwise.
+ ******************************************************************************/
+DTVEXPORT Dword g_ITEAPI_TxSetSpectralInversion(
+    IN  Bool      isInversion,
+	IN  Byte	   DevNo);
 #endif  
 

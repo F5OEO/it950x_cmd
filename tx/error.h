@@ -60,7 +60,7 @@
 #define     ERR_TUNER_NOT_SUPPORT       0x00000038ul
 #define     ERR_UNDEFINED_SAW_BW        0x00000039ul
 #define     ERR_INVALID_CHIP_REV        0x0000003Aul
-#define     ERR_WAIT_CONST_TIMEOUT      0x0000003Bul
+#define     ERR_BUFFER_INSUFFICIENT      0x0000003Bul
 #define     ERR_COUNTER_NOT_AVAILABLE   0x0000003Cul
 #define     ERR_LOADFW_COMP_FAIL        0x0000003Dul
 #define     ERR_CANT_FIND_EEPROM        0x0000003Eul
@@ -69,7 +69,7 @@
 #define     ERR_CANT_FIND_USB_DEV       0x00000041ul
 #define     ERR_INVALID_XTAL_FREQ       0x00000043ul
 #define     ERR_INVALID_DEVICE_COUNT    0x00000044ul
-#define		ERR_BUFFER_INSUFFICIENT		0x00000045ul
+
 
 //***********************************************************************
 // Error Code of Parallel Module

@@ -624,7 +624,7 @@ Dword g_ITEAPI_TxGetGainRange(
 			printf("\nSet Frequency Out of Range!\n");
 			dwError = ERR_FREQ_OUT_OF_RANGE;
 		}
-		if(bandwidth >= 2000 && bandwidth <= 8000)
+		if(bandwidth >= 1000 && bandwidth <= 8000)
 			request.bandwidth = bandwidth;
 		else {
 			printf("\nSet Bandwidth Out of Range!\n");

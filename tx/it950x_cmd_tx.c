@@ -1079,6 +1079,7 @@ Dword TxDataOutputTest(ModulatorParam *param, options_t *options)
 
     if (strcmp("-", options->ts_filename) == 0)
     {
+        fprintf(stderr, "Using stdin TS\n");
         TsFile = stdin;
         stdin_used = 1;
     }
@@ -1100,7 +1101,7 @@ Dword TxDataOutputTest(ModulatorParam *param, options_t *options)
         fprintf(stderr, "%s size = %9jd\n", options->ts_filename, dwFileSize);
     }
 
-    if (options->insert_sisdt_custom_packets)
+    if (options->insert_sisdt_custom_packets&&!stdin_used)
     {
         SetPeriodicCustomPacket(TsFile, dwFileSize, param, options);
     }
@@ -1123,7 +1124,7 @@ Dword TxDataOutputTest(ModulatorParam *param, options_t *options)
         fprintf(stderr, "The recommended input file data rate for %s is = %llu bps (%llu kbps)\n", options->ts_filename, TSFileDataRate, TSFileDataRate/1000);
     }
     
-    if (options->ts_data_rate)
+    if (options->ts_data_rate>0)
     {
         fprintf(stderr, "Input file data rate set forcibly to %llu bps (%llu kbps)\n", options->ts_data_rate, options->ts_data_rate/1000);
         TSFileDataRate = options->ts_data_rate;
@@ -1181,23 +1182,11 @@ rewrite_case:
     
         if (ret != ERR_NO_ERROR) // RB is full. Try wait and rewrite until success.
         {     
-            usleep(100);
-            fprintf(stderr, "rewrite\n");
+            usleep(10000);
+            fprintf(stderr, "Overflow\n");
             goto rewrite_case;
         } 
-        else if (ret != ERR_NO_ERROR) 
-        {
-            usleep(100000);
-            fprintf(stderr, "write fail\n");
-            k++;
-            
-            if (k>50) 
-            {
-                break; // 5sec
-            }
-            
-            goto rewrite_case;
-        }
+        
         
         Total_bytesSent+=bytesRead;
 

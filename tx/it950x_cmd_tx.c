@@ -238,7 +238,7 @@ Dword GetChannelCapacity(options_t *options)
 }
 
 //==================================================================================================
-void printDeviceType(options_t *options)
+void printDeviceType(options_t *options, Byte DevNo)
 {
     int device_type = 0;
 
@@ -374,49 +374,35 @@ Dword SetIQCalibrationTable(options_t *options)
 }
 
 //==================================================================================================
-static int GetDriverInfo(Byte DevNo)
+static int GetDriverInfo(HandleType HandleNum,Byte DevNo)
 {
 	Word ChipType = 0;		
 	Byte Tx_NumOfDev = 0;//, device_type = 7;
-	TxModDriverInfo driverInfo;
+	DEVICE_INFO DeviceInfo;
 	Dword dwError = ERR_NO_ERROR;
-	if((dwError = g_ITEAPI_TxGetNumOfDevice(&Tx_NumOfDev)) == ERR_NO_ERROR)
-		fprintf(stderr, "%d Devices\n", Tx_NumOfDev);
-	else 
-		fprintf(stderr, "g_ITEAPI_TxGetNumOfDevice error\n");	
 
-	if((dwError = g_ITEAPI_TxDeviceInit(DevNo)) == ERR_NO_ERROR)
+	if((dwError = g_ITEAPI_TxDeviceInit(HandleNum,DevNo)) == ERR_NO_ERROR)
 		fprintf(stderr, "g_ITEAPI_TxDeviceInit ok\n");
 	else 
 		fprintf(stderr, "g_ITEAPI_TxDeviceInit fail\n");
 
-#if 0
-  	if (g_ITEAPI_TxSetDeviceType(device_type, DevNo) != ERR_NO_ERROR) 
-		fprintf(stderr, "g_ITEAPI_SetDeviceType fail\n");		
+	if((dwError = g_ITEAPI_TxGetNumOfDevice(&Tx_NumOfDev,DevNo)) == ERR_NO_ERROR)
+		fprintf(stderr, "%d Devices\n", Tx_NumOfDev);
 	else 
-		fprintf(stderr, "g_ITEAPI_SetDeviceType: %d ok\n", device_type);		
-	
-	if (g_ITEAPI_TxGetDeviceType((Byte*)&device_type, DevNo) != ERR_NO_ERROR) 
-		fprintf(stderr, "g_ITEAPI_GetDeviceType fail\n");	
-	else 
-		fprintf(stderr, "g_ITEAPI_GetDeviceType: %d ok\n", device_type);
-#endif
-	if((dwError = g_ITEAPI_TxGetChipType(&ChipType, DevNo)) == ERR_NO_ERROR)
-		fprintf(stderr, "g_ITE_TxGetChipType ok\n");
-	else
-		fprintf(stderr, "g_ITE_TxGetChipType fail\n");
+		fprintf(stderr, "g_ITEAPI_TxGetNumOfDevice error\n");	
 
-	if ((dwError = g_ITEAPI_TxGetDrvInfo(&driverInfo, DevNo))) {
+
+	if ((dwError = g_ITEAPI_TxGetDrvInfo(&DeviceInfo,DevNo))) {
 		fprintf(stderr, "Get Driver Info failed 0x%lu!\n", dwError);
 	} else {
 		fprintf(stderr, "g_ITEAPI_GetDrvInfo ok\n");		
-		fprintf(stderr, "DriverInfo.DriverVerion  = %s\n", driverInfo.DriverVerion);
-		fprintf(stderr, "DriverInfo.APIVerion     = %s\n", driverInfo.APIVerion);
-		fprintf(stderr, "DriverInfo.FWVerionLink  = %s\n", driverInfo.FWVerionLink);
-		fprintf(stderr, "DriverInfo.FWVerionOFDM  = %s\n", driverInfo.FWVerionOFDM);
-		fprintf(stderr, "DriverInfo.Company       = %s\n", driverInfo.Company);
-		fprintf(stderr, "DriverInfo.SupportHWInfo = %s\n", driverInfo.SupportHWInfo);
-		fprintf(stderr, "DriverInfo.ChipType      = IT%x", ChipType);
+		fprintf(stderr, "DriverInfo.DriverVerion  = %s\n", DeviceInfo.DriverVerion);
+		fprintf(stderr, "DriverInfo.APIVerion     = %s\n", DeviceInfo.APIVerion);
+		fprintf(stderr, "DriverInfo.FWVerionLink  = %s\n", DeviceInfo.FWVerionLink);
+		fprintf(stderr, "DriverInfo.FWVerionOFDM  = %s\n", DeviceInfo.FWVerionOFDM);
+		fprintf(stderr, "DriverInfo.Company       = %s\n", DeviceInfo.Company);
+		fprintf(stderr, "DriverInfo.SupportHWInfo = %s\n", DeviceInfo.SupportHWInfo);
+		fprintf(stderr, "DriverInfo.ChipType      = IT%x", DeviceInfo.ProductID);
 	}
 
 	return dwError;
@@ -1182,6 +1168,7 @@ Dword TxDataOutputTest(ModulatorParam *param, options_t *options)
     memset(fileBuf, 0, Tx_datalength);
     bytesRead = fread(fileBuf, 1, Tx_datalength, TsFile);
     ret = g_ITEAPI_TxSendTSData((Byte*)fileBuf, bytesRead, options->dev_handle);
+    
     TxStartTime = GetTickCount();
 
     while(!gDoExit)
@@ -1192,13 +1179,13 @@ Dword TxDataOutputTest(ModulatorParam *param, options_t *options)
 rewrite_case:
         ret = g_ITEAPI_TxSendTSData((Byte*)fileBuf, bytesRead, options->dev_handle);
     
-        if (ret == 0) // RB is full. Try wait and rewrite until success.
+        if (ret != ERR_NO_ERROR) // RB is full. Try wait and rewrite until success.
         {     
             usleep(100);
-            // fprintf(stderr, "rewrite\n");
+            fprintf(stderr, "rewrite\n");
             goto rewrite_case;
         } 
-        else if (ret < 0) 
+        else if (ret != ERR_NO_ERROR) 
         {
             usleep(100000);
             fprintf(stderr, "write fail\n");
@@ -1403,6 +1390,8 @@ int main(int argc, char **argv)
     Byte DevNo;
     ModulatorParam param;
     int dc_i, dc_q;
+    HandleType handleType;
+    handleType=EAGLEI; // What is other type ? 
     memset(&param, 0, sizeof(param));
     options_t options;
     
@@ -1413,7 +1402,7 @@ int main(int argc, char **argv)
     fprintf(stderr, "The Maximum Channel Capacity is %lu bps (%lu Kbps)\n", ChannelCapacity, ChannelCapacity/1000);
     fprintf(stderr, "\n");
 
-    if (GetDriverInfo(options.dev_handle) != ERR_NO_ERROR)
+    if (GetDriverInfo(handleType,options.dev_handle) != ERR_NO_ERROR)
     {
         return 0;
     }
@@ -1431,7 +1420,7 @@ int main(int argc, char **argv)
     
     if (options.print_device_type)
     {
-        printDeviceType(&options);
+        printDeviceType(&options,DevNo);
     }
 
     if (options.tps_cellid_specified)

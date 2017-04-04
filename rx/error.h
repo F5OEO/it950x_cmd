@@ -1,13 +1,11 @@
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
-#include "type.h"
-
 //***********************************************************************
 // Error Code
 //***********************************************************************
-#define     ERR_NO_ERROR                0x00000000ul
-#define     ERR_RESET_TIMEOUT           0x00000001ul
+#define     ERR_NO_ERROR				0x00000000ul
+#define		ERR_RESET_TIMEOUT			0x00000001ul
 #define     ERR_WRITE_REG_TIMEOUT       0x00000005ul
 #define     ERR_WRITE_TUNER_TIMEOUT     0x00000006ul
 #define     ERR_WRITE_TUNER_FAIL        0x00000007ul
@@ -141,7 +139,5 @@
 #define     ERR_USB_TOO_MUCH_WRITE_DATA           0x2F000000ul
 #define     ERR_USB_NO_BURST_READ                 0x30000000ul
 #define     ERR_USB_NULL_PENUM					  0x31000000ul
-
-char *DTV_Error(int dtv_errno);
 
 #endif // _ERROR_H_

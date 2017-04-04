@@ -1,5 +1,15 @@
-// DTVAPI.cpp : Defines the entry point for the DLL application.
-//
+/**
+ * Copyright (c) 2015 ITE Technologies, Inc. All rights reserved.
+ * 
+ * Date:
+ *    2015/01/14
+ *
+ * Module Name:
+ *    api.cpp
+ *
+ * Abstract:
+ *    Defines the entry point for the DLL application.
+ */
 
 #include "api.h"
 
@@ -20,12 +30,12 @@ int GetDriverHandle(Byte handleNum)
 	char* devName = "";
 	int ret;
 
-	ret = asprintf(&devName, "/dev/usb-it913x%d", handleNum);
+	ret = asprintf(&devName, "/dev/usb-it950x-rx%d", handleNum);
     hDriver = open(devName, O_RDWR);
 	if (hDriver > 0)
-		fprintf(stderr, "\nOpen /dev/usb-it913x%d OK!\n", handleNum);
+		printf("\nOpen /dev/usb-it950x-rx%d OK!\n", handleNum);
 	else
-		fprintf(stderr, "\nOpen /dev/usb-it913x%d Failed!\n", handleNum);
+		printf("\nOpen /dev/usb-it950x-rx%d Failed!\n", handleNum);
 
 	return hDriver;
 }
@@ -58,7 +68,7 @@ Dword DTV_Initialize(Byte handleNum)
     dwError = DTV_GetVersion(&DriverInfo);
 
     if (g_hDriver == INVALID_HANDLE_VALUE){
-		fprintf(stderr, "\nINVALID_HANDLE_VALUE fail\n");
+		printf("\nINVALID_HANDLE_VALUE fail\n");
         dwError = ERR_INVALID_DEV_TYPE;
 }
     if (g_hDriver < INVALID_HANDLE_VALUE){
@@ -503,6 +513,26 @@ Dword DTV_WriteRegLINK(
         dwError = request.error;
     }
     else {
+        dwError = ERR_NOT_IMPLEMENTED;
+    }
+
+    return dwError;
+}
+
+Dword DTV_SetDecrypt(
+	Dword	decryptKey,
+	Byte	decryptEnable)
+{
+    Dword dwError = ERR_NO_ERROR;
+    int result;
+    TxSetDecryptRequest request;
+
+    if (g_hDriver > 0) {
+        request.decryptKey = (__u32) decryptKey;
+        request.decryptEnable = decryptEnable;
+        result = ioctl(g_hDriver, IOCTL_ITE_DEMOD_SETDECRYPT, (void *)&request);
+        dwError = request.error;
+    } else {
         dwError = ERR_NOT_IMPLEMENTED;
     }
 

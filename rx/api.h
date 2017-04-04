@@ -1,15 +1,15 @@
-/*
- * Copyright (c) 2012 ITE Technologies, Inc. All rights reserved.
+/**
+ * Copyright (c) 2015 ITE Technologies, Inc. All rights reserved.
  * 
  * Date:
- *    2012/02/20
+ *    2015/01/14
  *
  * Module Name:
  *    api.h
  *
  * Abstract:
  *    ITE Linux API header file.
-*/
+ */
 
 
 #ifndef     _DEMOD_DTVAPI_
@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -60,8 +61,9 @@ typedef enum {
 } DTVStreamType;
 
 //
-// Driver and API information.
-//
+/*
+ * Driver and API information.
+ */
 typedef struct {
     Byte  DriverVerion[16];      // XX.XX.XX.XX Ex., 1.2.3.4.
     Byte  APIVerion[32];         // XX.XX.XXXXXXXX.XX Ex., 1.2.3.4.
@@ -74,26 +76,26 @@ typedef struct {
     Byte  reserved[128];
 } DTVDriverInfo, *PDTVDriverInfo;
 
-//
-// The type defination of Priority.
-//
+/*
+ * The type defination of Priority.
+ */
 typedef enum {
     DTVPriority_HIGH = 0,        // DVB-T and DVB-H - identifies high-priority stream.
     DTVPriority_LOW              // DVB-T and DVB-H - identifies low-priority stream.
 } DTVPriority;
 
-//
-// The type defination of IpVersion.
-//
+/*
+ * The type defination of IpVersion.
+ */
 typedef enum {
 	DTVIpVersion_IPV4 = 0,       // The IP version if IPv4.
 	DTVIpVersion_IPV6 = 1        // The IP version if IPv6.
 } DTVIpVersion;
 
 
-//
-// The type defination of Ip.
-//
+/*
+ * The type defination of Ip.
+ */
 typedef struct {
 	DTVIpVersion version;        // The version of IP. See the defination of IpVersion.
 	DTVPriority priority;        // The priority of IP. See the defination of Priority.
@@ -101,10 +103,10 @@ typedef struct {
 	Byte address[16];            // The byte array to store IP address.
 } DTVIp, *PDTVIp;
 
-//
-// The type defination of Platform.
-// Mostly used is in DVB-H standard
-//
+/*
+ * The type defination of Platform.
+ * Mostly used is in DVB-H standard
+ */
 typedef struct {
 	Dword platformId;            // The ID of platform.
 	char iso639LanguageCode[3];  // The ISO 639 language code for platform name.
@@ -118,32 +120,31 @@ typedef struct {
 	DTVIpVersion ipVersion;      // The IP version of this platform.
 } DTVPlatform, *PDTVPlatform;
 
-//
-// The type defination of Target.
-//
+/*
+ * The type defination of Target.
+ */
 typedef enum {
 	DTVSectionType_MPE = 0,      // Stands for MPE data.
 	DTVSectionType_SIPSI,        // Stands for SI/PSI table, but don't have to specify table ID.
 	DTVSectionType_TABLE         // Stands for SI/PSI table.
 } DTVSectionType;
 
-//
-// The type defination of FrameRow.
-//
+/*
+ * The type defination of FrameRow.
+ */
 typedef enum {
 	DTVFrameRow_256 = 0,         // There should be 256 rows for each column in MPE-FEC frame.
 	DTVFrameRow_512,             // There should be 512 rows for each column in MPE-FEC frame.
-	DTVFrameRow_768,	           // There should be 768 rows for each column in MPE-FEC frame.
+	DTVFrameRow_768,	         // There should be 768 rows for each column in MPE-FEC frame.
 	DTVFrameRow_1024             // There should be 1024 rows for each column in MPE-FEC frame.
 } DTVFrameRow;
 
-//
-// The type defination of Pid.
-//
-// as sectionType = SectionType_SIPSI: only value is valid.
-// as sectionType = SectionType_TABLE: both value and table is valid.
-// as sectionType = SectionType_MPE: except table all other fields is valid.
-//
+/*
+ * The type defination of Pid.
+ * as sectionType = SectionType_SIPSI: only value is valid.
+ * as sectionType = SectionType_TABLE: both value and table is valid.
+ * as sectionType = SectionType_MPE: except table all other fields is valid.
+ */
 typedef struct {
 	Byte table;	                 // The table ID. Which is used to filter specific SI/PSI table.
 	Byte duration;               // The maximum burst duration. It can be specify to 0xFF if user don't know the exact value.
@@ -155,9 +156,9 @@ typedef struct {
 	Word value;                  // The 13 bits Packet ID.
 } DTVPid, *PDTVPid;
 
-//
-// The type defination of statistic
-//
+/*
+ * The type defination of statistic
+ */
 typedef struct {
     Dword postVitErrorCount;    // ErrorBitCount.
     Dword postVitBitCount;      // TotalBitCount.
@@ -170,27 +171,27 @@ typedef struct {
     Byte mpefecFrameErrorCount; // MPE-FEC Frame Error Ratio (error ratio after MPE-FEC) = mpefecFrameErrorCount / 128.
 } DTVStatistic, *PDTVStatistic;
 
-//
-// The type defination of TransmissionMode.
-//
+/*
+ * The type defination of TransmissionMode.
+ */
 typedef enum {
     DTVTransmissionMode_2K = 0,  // OFDM frame consists of 2048 different carriers (2K FFT mode).
     DTVTransmissionMode_8K = 1,  // OFDM frame consists of 8192 different carriers (8K FFT mode).
     DTVTransmissionMode_4K = 2   // OFDM frame consists of 4096 different carriers (4K FFT mode).
 } DTVTransmissionMode;
 
-//
-// The type defination of Constellation.
-//
+/*
+ * The type defination of Constellation.
+ */
 typedef enum {
     DTVConstellation_QPSK = 0,   // Signal uses QPSK constellation.
     DTVConstellation_16QAM,      // Signal uses 16QAM constellation.
     DTVConstellation_64QAM       // Signal uses 64QAM constellation.
 } DTVConstellation;
 
-//
-// The type defination of Interval.
-//
+/*
+ * The type defination of Interval.
+ */
 typedef enum {
     DTVInterval_1_OVER_32 = 0,   // Guard interval is 1/32 of symbol length.
     DTVInterval_1_OVER_16,       // Guard interval is 1/16 of symbol length.
@@ -198,9 +199,9 @@ typedef enum {
     DTVInterval_1_OVER_4         // Guard interval is 1/4 of symbol length.
 } DTVInterval;
 
-//
-// The type defination of CodeRate.
-///
+/*
+ * The type defination of CodeRate.
+ */
 typedef enum {
     DTVCodeRate_1_OVER_2 = 0,    // Signal uses FEC coding ratio of 1/2.
     DTVCodeRate_2_OVER_3,        // Signal uses FEC coding ratio of 2/3.
@@ -210,9 +211,9 @@ typedef enum {
     DTVCodeRate_NONE             // None, NXT doesn't have this one.
 } DTVCodeRate;
 
-//
-// TPS Hierarchy and Alpha value.
-//
+/*
+ * TPS Hierarchy and Alpha value.
+ */
 typedef enum {
     DTVHierarchy_NONE = 0,       // Signal is non-hierarchical.
     DTVHierarchy_ALPHA_1,        // Signalling format uses alpha of 1.
@@ -220,9 +221,9 @@ typedef enum {
     DTVHierarchy_ALPHA_4         // Signalling format uses alpha of 4.
 } DTVHierarchy;
 
-//
-// The type defination of Bandwidth.
-//
+/*
+ * The type defination of Bandwidth.
+ */
 typedef enum {
     DTVBandwidth_6M = 0,         // Signal bandwidth is 6MHz.
     DTVBandwidth_7M,             // Signal bandwidth is 7MHz.
@@ -230,9 +231,9 @@ typedef enum {
     DTVBandwidth_5M              // Signal bandwidth is 5MHz.
 } DTVBandwidth;
 
-//
-// The defination of ChannelInformation.
-//
+/*
+ * The defination of ChannelInformation.
+ */
 typedef struct {
     Dword frequency;                         // Channel frequency in KHz.
     DTVTransmissionMode transmissionMode;    // Number of carriers used for OFDM signal.
@@ -245,9 +246,9 @@ typedef struct {
     DTVBandwidth bandwidth;
 } DTVChannelTPSInfo, *PDTVChannelTPSInfo;
 
-//
-// Temp data structure of Gemini.
-//
+/*
+ * Temp data structure of Gemini.
+ */
 typedef struct
 {
     Byte charSet;
@@ -255,9 +256,9 @@ typedef struct
     Byte string[16];
 } DTVLabel, *PDTVLabel;
 
-//
-// Temp data structure of Gemini.
-//
+/*
+ * Temp data structure of Gemini.
+ */
 typedef struct
 {
     Word ensembleId;
@@ -265,10 +266,10 @@ typedef struct
     Byte totalServices;
 } DTVEnsemble, *PDTVEnsemble;
 
-//
-// The type defination of Service.
-// Mostly used is in T-DMB standard
-//
+/*
+ * The type defination of Service.
+ * Mostly used is in T-DMB standard
+ */
 typedef struct {
     Byte serviceType;            // Service Type(P/D): 0x00: Program, 0x80: Data.
     Dword serviceId;
@@ -277,9 +278,9 @@ typedef struct {
     Byte totalComponents;
 } DTVService, *PDTVService;
 
-//
-// The type defination of Service Component.
-//
+/*
+ * The type defination of Service Component.
+ */
 typedef struct {
     Byte serviceType;            // Service Type(P/D): 0x00: Program, 0x80: Data.
     Dword serviceId;             // Service ID.
@@ -576,4 +577,18 @@ DTVEXPORT Dword DTV_WriteRegLINK(
 DTVEXPORT Dword DTV_ReadEEPROMI2CAddr(
     OUT Byte* pbyData);
 
+// -----------------------------------------------------------------------------
+//  PURPOSE:
+//      Set TPS Decryption.
+//
+//  PARAMETERS:
+//      decryptKey - decrypt key.
+//      decryptEnable - decrypt enable.
+// 
+//  RETURNS:
+//      0 if no error, non-zero value otherwise.
+// -----------------------------------------------------------------------------
+DTVEXPORT Dword DTV_SetDecrypt(
+	IN Dword	decryptKey,
+	IN Byte	decryptEnable);
 #endif 

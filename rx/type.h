@@ -64,8 +64,8 @@ typedef long Long;
  */
 typedef struct {
     Dword frequency;      /**  */
-    int dAmp;			  /**  */
-	int dPhi;
+    int  dAmp;			  /**  */
+	int  dPhi;	
 } IQtable;
 
 typedef struct {
@@ -78,12 +78,24 @@ typedef struct {
 	Word	c3DefaultValue;
 } CalibrationInfo;
 
+typedef struct {
+    Dword startFrequency;      /**  */
+    int  i;			  /**  */
+	int  q;	
+} DCtable;
+
+typedef struct {
+    DCtable *ptrDCtable;
+	DCtable *ptrOFStable;
+	Word	tableGroups;		//Number of IQtable groups;	
+} DCInfo;
+
 /**
  * The type defination of Bool
  */
 typedef enum {
-	False = 0,
-	True = 1
+    False = 0,
+    True = 1
 } Bool;
 
 
@@ -91,8 +103,8 @@ typedef enum {
  * The type defination of Segment
  */
 typedef struct {
-	Byte segmentType;
-	Dword segmentLength;
+    Byte segmentType;           /** 0:Firmware download 1:Rom copy 2:Direct command */
+    Dword segmentLength;
 } Segment;
 
 
@@ -100,10 +112,10 @@ typedef struct {
  * The type defination of Bandwidth.
  */
 typedef enum {
-    Bandwidth_6M = 0,
-    Bandwidth_7M,
-    Bandwidth_8M,
-    Bandwidth_5M
+    Bandwidth_6M = 0,           /** Signal bandwidth is 6MHz */
+    Bandwidth_7M,               /** Signal bandwidth is 7MHz */
+    Bandwidth_8M,               /** Signal bandwidth is 8MHz */
+    Bandwidth_5M                /** Signal bandwidth is 5MHz */
 } Bandwidth;
 
 
@@ -131,10 +143,10 @@ typedef enum {
  * The type defination of Interval.
  */
 typedef enum {
-    Interval_1_OVER_32 = 0,     // 1/32
-    Interval_1_OVER_16,         // 1/16
-    Interval_1_OVER_8,          // 1/8
-    Interval_1_OVER_4           // 1/4
+    Interval_1_OVER_32 = 0,     /** Guard interval is 1/32 of symbol length */
+    Interval_1_OVER_16,         /** Guard interval is 1/16 of symbol length */
+    Interval_1_OVER_8,          /** Guard interval is 1/8 of symbol length  */
+    Interval_1_OVER_4           /** Guard interval is 1/4 of symbol length  */
 } Interval;
 
 
@@ -142,8 +154,8 @@ typedef enum {
  * The type defination of Priority.
  */
 typedef enum {
-    Priority_HIGH = 0,
-    Priority_LOW
+    Priority_HIGH = 0,          /** DVB-T - identifies high-priority stream */
+    Priority_LOW                /** DVB-T - identifies low-priority stream  */
 } Priority;             // High Priority or Low Priority
 
 
@@ -151,23 +163,23 @@ typedef enum {
  * The type defination of CodeRate.
  */
 typedef enum {
-    CodeRate_1_OVER_2 = 0,  // 1/2
-    CodeRate_2_OVER_3,      // 2/3
-    CodeRate_3_OVER_4,      // 3/4
-    CodeRate_5_OVER_6,      // 5/6
-    CodeRate_7_OVER_8,      // 7/8
-    CodeRate_NONE         // none, NXT doesn't have this one
-} CodeRate;               // Code Rate
+    CodeRate_1_OVER_2 = 0,      /** Signal uses FEC coding ratio of 1/2 */
+    CodeRate_2_OVER_3,          /** Signal uses FEC coding ratio of 2/3 */
+    CodeRate_3_OVER_4,          /** Signal uses FEC coding ratio of 3/4 */
+    CodeRate_5_OVER_6,          /** Signal uses FEC coding ratio of 5/6 */
+    CodeRate_7_OVER_8,          /** Signal uses FEC coding ratio of 7/8 */
+    CodeRate_NONE               /** None, NXT doesn't have this one     */
+} CodeRate;
 
 
 /**
  * TPS Hierarchy and Alpha value.
  */
 typedef enum {
-    Hierarchy_NONE = 0,
-    Hierarchy_ALPHA_1,
-    Hierarchy_ALPHA_2,
-    Hierarchy_ALPHA_4
+    Hierarchy_NONE = 0,         /** Signal is non-hierarchical        */
+    Hierarchy_ALPHA_1,          /** Signalling format uses alpha of 1 */
+    Hierarchy_ALPHA_2,          /** Signalling format uses alpha of 2 */
+    Hierarchy_ALPHA_4           /** Signalling format uses alpha of 4 */
 } Hierarchy;
 
 
@@ -345,28 +357,31 @@ typedef enum {
 	FrameRow_1024
 } FrameRow;
 
-
 /**
  * The type defination of Pid.
+ *
+ * In DVB-T mode, only value is valid. In DVB-H mode,
+ * as sectionType = SectionType_SIPSI: only value is valid.
+ * as sectionType = SectionType_TABLE: both value and table is valid.
+ * as sectionType = SectionType_MPE: except table all other fields is valid.
  */
 typedef struct {
-	Byte table;
-	Byte duration;
-	FrameRow frameRow;
-	SectionType sectionType;
-	Priority priority;
-	IpVersion version;
-	Bool cache;
-	Word value;
+    Byte table;                 /** The table ID. Which is used to filter specific SI/PSI table.                                  */
+    Byte duration;              /** The maximum burst duration. It can be specify to 0xFF if user don't know the exact value.     */
+    FrameRow frameRow;          /** The frame row of MPE-FEC. It means the exact number of rows for each column in MPE-FEC frame. */
+    SectionType sectionType;    /** The section type of pid. See the defination of SectionType.                                   */
+    Priority priority;          /** The priority of MPE data. Only valid when sectionType is set to SectionType_MPE.              */
+    IpVersion version;          /** The IP version of MPE data. Only valid when sectionType is set to SectionType_MPE.            */
+    Bool cache;                 /** True: MPE data will be cached in device's buffer. Fasle: MPE will be transfer to host.        */
+    Word value;                 /** The 13 bits Packet ID.                                                                        */
 } Pid;
-
 
 /**
  * The type defination of ValueSet.
  */
 typedef struct {
-	Dword address;
-	Byte value;
+    Dword address;      /** The address of target register */
+    Byte value;         /** The value of target register   */
 } ValueSet;
 
 
@@ -440,15 +455,10 @@ typedef enum {
  * The type defination of StreamType.
  */
 typedef enum {
-	StreamType_NONE = 0,		// Invalid (Null) StreamType
-	StreamType_DVBH_DATAGRAM,
-	StreamType_DVBH_DATABURST,
-	StreamType_DVBT_DATAGRAM,
-	StreamType_DVBT_PARALLEL,
-	StreamType_DVBT_SERIAL,
-	StreamType_TDMB_DATAGRAM,
-	StreamType_FM_DATAGRAM,
-	StreamType_FM_I2S
+    StreamType_NONE = 0,            /** Invalid (Null) StreamType                */
+    StreamType_DVBT_DATAGRAM = 3,   /** DVB-T mode, store data in device buffer  */
+    StreamType_DVBT_PARALLEL,       /** DVB-T mode, output via paralle interface */
+    StreamType_DVBT_SERIAL,         /** DVB-T mode, output via serial interface  */
 } StreamType;
 
 
@@ -466,8 +476,8 @@ typedef enum {
  * The type defination of ClockTable.
  */
 typedef struct {
-	Dword crystalFrequency;
-	Dword adcFrequency;
+    Dword crystalFrequency;     /** The frequency of crystal. */
+    Dword adcFrequency;         /** The frequency of ADC.     */
 } ClockTable;
 
 
@@ -553,10 +563,10 @@ typedef struct {
  * The type defination of Statistic.
  */
 typedef struct {
-	Bool signalPresented;
-	Bool signalLocked;
-	Byte signalQuality;			// 0 ~ 100
-	Byte signalStrength;		// 0 ~ 100
+    Bool signalPresented;       /** Signal is presented.                                                                         */
+    Bool signalLocked;          /** Signal is locked.                                                                            */
+    Byte signalQuality;         /** Signal quality, from 0 (poor) to 100 (good).                                                 */
+    Byte signalStrength;        /** Signal strength from 0 (weak) to 100 (strong).                                               */
 	Byte frameErrorRatio;		// Frame Error Ratio (error ratio before MPE-FEC) = frameErrorRate / 128
 	Byte mpefecFrameErrorRatio; // MPE-FEC Frame Error Ratio (error ratio after MPE-FEC) = mpefecFrameErrorCount / 128
 } Statistic;
@@ -615,7 +625,7 @@ typedef struct {
  * @param demodulator the handle of demodulator.
  * @param registerAddress address of register to be written.
  * @param bufferLength number, 1-8, of registers to be written.
- * @param buffer buffer used to store values to be written to specified 
+ * @param buffer buffer used to store values to be written to specified
  *        registers.
  * @return Error_NO_ERROR: successful, non-zero error code otherwise.
  */
@@ -677,7 +687,7 @@ typedef Dword (*WriteTunerRegisters) (
  * @param demodulator the handle of demodulator.
  * @param registerAddress address of register to be read.
  * @param bufferLength number, 1-8, of registers to be written.
- * @param buffer buffer used to store values to be written to specified 
+ * @param buffer buffer used to store values to be written to specified
  *        registers.
  * @return Error_NO_ERROR: successful, non-zero error code otherwise.
  */
@@ -698,7 +708,7 @@ typedef Dword (*WriteEepromValues) (
  * @param demodulator the handle of demodulator.
  * @param registerAddress address of register to be read.
  * @param bufferLength number, 1-8, of registers to be read.
- * @param buffer buffer used to store values to be read to specified 
+ * @param buffer buffer used to store values to be read to specified
  *        registers.
  * @return Error_NO_ERROR: successful, non-zero error code otherwise.
  */
@@ -806,9 +816,9 @@ typedef Dword (*ModifyRegister) (
  * @return Error_NO_ERROR: successful, non-zero error code otherwise.
  */
 typedef Dword (*LoadFirmware) (
-	IN  Demodulator*	demodulator,
-	IN  Dword			firmwareLength,
-	IN  Byte*			firmware
+    IN  Demodulator*    demodulator,
+    IN  Dword           firmwareLength,
+    IN  Byte*           firmware
 );
 
 
@@ -1364,6 +1374,82 @@ typedef struct {
 	// FM structure
 	StandardDescription fmStandardDescription;
 } Gemini;
+
+/**********************************************
+ * 					ISDB-T
+ **********************************************/
+/**
+ * The type defination of Constellation.
+ */
+typedef enum {
+
+    Constellation_QPSK = 0,     /** Signal uses QPSK constellation  */
+    Constellation_16QAM,        /** Signal uses 16QAM constellation */
+    Constellation_64QAM         /** Signal uses 64QAM constellation */
+} Constellation;
+
+typedef enum {
+	ARIB_STD_B31 = 0,					/** System based on this specification							*/
+	ISDB_TSB							/** System for ISDB-TSB											*/
+} SystemIdentification;
+
+typedef struct {
+	Constellation	constellation;        /** Constellation scheme (FFT mode) in use                   */
+	CodeRate		codeRate;		      /** FEC coding ratio of high-priority stream                 */
+} TMCC;
+
+typedef struct _TMCCINFO{
+	TMCC					layerA;
+	TMCC					layerB;	
+	Bool					isPartialReception;
+	SystemIdentification	systemIdentification;
+} TMCCINFO, *pTMCCINFO;
+
+typedef enum {
+   filter = 0,
+   LayerB = 1,
+   LayerA = 2,
+   LayerAB = 3
+} TransportLayer;
+
+/**
+ * The type defination of Constellation.
+ */
+typedef enum {
+    DownSampleRate_21_OVER_1 = 0,      /** Signal uses FEC coding ratio of 21/1 */
+    DownSampleRate_21_OVER_2,		   /** Signal uses FEC coding ratio of 21/2 */
+    DownSampleRate_21_OVER_3,		   /** Signal uses FEC coding ratio of 21/3 */
+    DownSampleRate_21_OVER_4,		   /** Signal uses FEC coding ratio of 21/4 */
+    DownSampleRate_21_OVER_5,	       /** Signal uses FEC coding ratio of 21/5 */
+    DownSampleRate_21_OVER_6,	       /** Signal uses FEC coding ratio of 21/6 */
+} DownSampleRate;
+
+/**
+ * The type defination of TransmissionMode.
+ */
+typedef enum {
+    TransmissionMode_2K = 0,    /** OFDM frame consists of 2048 different carriers (2K FFT mode) */
+    TransmissionMode_8K = 1,    /** OFDM frame consists of 8192 different carriers (8K FFT mode) */
+    TransmissionMode_4K = 2     /** OFDM frame consists of 4096 different carriers (4K FFT mode) */
+} TransmissionModes;
+
+typedef struct {
+    Dword		frequency;                /** Channel frequency in KHz.                                */
+    Bandwidth	bandwidth;
+	TransmissionModes transmissionMode; /** Number of carriers used for OFDM signal                  */
+	Interval	interval;                 /** Fraction of symbol length used as guard (Guard Interval) */
+	//DownSampleRate ds;
+	TMCC		layerA;
+	TMCC		layerB;
+	Bool		isPartialReception;
+} ISDBTModulation;
+
+typedef enum {
+	PcrModeDisable = 0,
+	PcrMode1 = 1,
+    PcrMode2,
+	PcrMode3
+} PcrMode;
 
 
 extern const Byte Standard_bitMask[8];

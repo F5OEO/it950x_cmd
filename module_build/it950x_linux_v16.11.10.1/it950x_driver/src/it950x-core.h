@@ -21,7 +21,7 @@
 #include <linux/usb.h>
 #include <linux/fs.h>
 #include <linux/file.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include "iocontrol.h"
 #include "IT9133.h"
 #include "IT9507.h"
